@@ -34,7 +34,7 @@ cd Rizz-GPT
 ```sh
 npm install
 ```
-### Step 5: Install FFMPEG (if not already installed)
+### Install FFMPEG (if not already installed)
 
 #### For Windows:
 
