@@ -8,7 +8,7 @@ const app = express();
 const port = 3000;
 const path = require('path');
 
-const openaiApiKey = `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`;
+const openaiApiKey = ``;
 const headers = {
 	'Authorization': `Bearer ${openaiApiKey}`,
 	'Content-Type': 'application/json'
