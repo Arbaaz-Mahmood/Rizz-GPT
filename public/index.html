@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RizzGPT</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        main {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+        .upload-form {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            display: none; /* Initially hide the form */
+        }
+        .alert-box {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+        audio {
+            width: 100%;
+            max-width: 500px;
+            
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Choose a Mode</h1>
+        <div class="mode-selection">
+            <button id="rizz-gpt-btn" class="btn btn-primary mr-2">Rizz GPT</button>
+            <button id="fashion-gpt-btn" class="btn btn-primary">Fashion GPT</button>
+        </div>
+        <h2 id="upload-heading" style="display: none;">Upload Video for Description and Voiceover</h2>
+        <div id="progress-text" class="alert-box"></div>
+        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+            <!-- Form contents -->
+            <input type="file" name="video" required>
+            <button type="submit" class="btn btn-primary">Upload</button>
+            <input type="hidden" id="mode" name="mode" value="">
+        </form>
+        <button id="new-upload" class="btn btn-secondary" style="display: none;">Start New Upload</button>
+        <audio id="audio-player" controls style="display: none;"></audio>
+    </main>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        // Event handler for the mode selection buttons
+        function setupModeButton(mode, buttonId) {
+            const button = document.getElementById(buttonId);
+            button.addEventListener('click', function() {
+                // Set mode
+                document.getElementById('mode').value = mode;
+                // Show form and upload heading
+                document.getElementById('upload-form').style.display = 'block';
+                document.getElementById('upload-heading').style.display = 'block';
+                // Update button styles
+                const buttons = document.querySelectorAll('.mode-selection .btn');
+                buttons.forEach(btn => btn.classList.add('btn-primary'));
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-secondary');
+            });
+        }
+
+        setupModeButton('rizz-gpt', 'rizz-gpt-btn');
+        setupModeButton('fashion-gpt', 'fashion-gpt-btn');
+		document.getElementById('upload-form').addEventListener('submit', function(event) {
+			event.preventDefault();
+			const formData = new FormData(this);
+			const progressText = document.getElementById('progress-text');
+			const newUploadBtn = document.getElementById('new-upload');
+			const audioPlayer = document.getElementById('audio-player');
+			
+			// Hide audio player and reset the source
+			audioPlayer.style.display = 'none';
+			audioPlayer.src = '';
+	
+			// Reset progress text and hide the new upload button
+			progressText.textContent = '';
+			progressText.className = '';
+	
+			// Setting up the alert box for uploading and processing
+			progressText.textContent = 'Uploading and Processing...';
+			progressText.className = 'alert alert-info alert-box';
+	
+			fetch('/upload', {
+				method: 'POST',
+				body: formData,
+			})
+			.then(response => response.json())
+			.then(data => {
+				progressText.textContent = 'Processing complete. Voiceover generated.';
+				progressText.className = 'alert alert-success alert-box';
+				newUploadBtn.style.display = 'inline-block';
+				
+				// Set audio player source to the returned audio file and display it
+				audioPlayer.src = data.audioFile;
+				audioPlayer.style.display = 'block';
+				audioPlayer.load();
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				progressText.textContent = 'Error in processing.';
+				progressText.className = 'alert alert-danger alert-box';
+			});
+		});
+	
+		document.getElementById('new-upload').addEventListener('click', function() {
+			const uploadForm = document.getElementById('upload-form');
+			const progressText = document.getElementById('progress-text');
+			const audioPlayer = document.getElementById('audio-player');
+			
+			// Clear any previous status messages and hide the audio player
+			progressText.textContent = '';
+			progressText.className = '';
+			audioPlayer.style.display = 'none';
+			audioPlayer.src = ''; // Reset audio source
+			
+			// Reset the form for a new upload
+			uploadForm.reset();
+			
+			// Hide the "Start New Upload" button
+			this.style.display = 'none';
+		});
+	
+		document.getElementById('rizz-gpt-btn').addEventListener('click', function() {
+			setMode('rizz-gpt');
+		});
+	
+		document.getElementById('fashion-gpt-btn').addEventListener('click', function() {
+			setMode('fashion-gpt');
+		});
+	
+		function setMode(mode) {
+			document.getElementById('mode').value = mode;
+			const buttons = document.querySelectorAll('.mode-selection .btn');
+			buttons.forEach(btn => {
+				btn.classList.remove('btn-secondary');
+				btn.classList.add('btn-primary');
+			});
+			document.getElementById(`${mode}-btn`).classList.remove('btn-primary');
+			document.getElementById(`${mode}-btn`).classList.add('btn-secondary');
+		}
+	
+		// Initialize the default mode on page load
+		setMode('rizz-gpt');
+	</script>
+</body>
+</html>
